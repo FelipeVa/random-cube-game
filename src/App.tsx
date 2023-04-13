@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { GameBox } from '@/components/GameBox';
 import { LostGameResume } from '@/components/LostGameResume';
-import { GameContainer } from '@/components/ui/GameContainer';
+import { GameContainer } from '@/components/GameContainer';
 import { GameInformation } from '@/components/GameInformation';
 
 function App() {
