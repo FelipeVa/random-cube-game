@@ -26,8 +26,61 @@ export const getIndexOfMiddleOfArrayOrArray = (array: any[]) => {
   return [firstLevel, secondLevel];
 };
 
-export const changeValuesOfArray = (array: any[], indexes: any[], value: any) => {
+export const changeValuesOfArray = (
+  array: any[],
+  indexes: any[],
+  value: any
+) => {
   array[indexes[0]][indexes[1]] = value;
 
   return array;
+};
+
+export const colors = [
+  'bg-yellow-800',
+  'bg-amber-600',
+  'bg-lime-500',
+  'bg-green-800',
+  'bg-emerald-400',
+  'bg-teal-600',
+  'bg-cyan-900',
+  'bg-sky-500',
+  'bg-indigo-600',
+  'bg-violet-200',
+  'bg-purple-600',
+  'bg-pink-600',
+];
+
+export function random(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
+
+export const generateRandomColorForCell = (
+  colorBag: string[],
+  winnerColor: string
+): string | null => {
+  let randomColor = colors[random(0, 7)];
+  const winnerColors = [winnerColor];
+  const isWinnerColorTwoTimes =
+    colorBag.filter((color) => color === winnerColor).length === 2;
+
+  if (colorBag.length === 8) {
+    return null;
+  }
+
+  if (
+    !isWinnerColorTwoTimes &&
+    randomColor === winnerColor &&
+    winnerColors.length !== 2
+  ) {
+    winnerColors.push(winnerColor);
+
+    return winnerColor;
+  }
+
+  if (colorBag.includes(randomColor)) {
+    return generateRandomColorForCell(colorBag, winnerColor);
+  }
+
+  return randomColor;
+};
