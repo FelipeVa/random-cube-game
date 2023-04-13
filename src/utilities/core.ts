@@ -68,11 +68,7 @@ export const generateRandomColorForCell = (
     return null;
   }
 
-  if (
-    !isWinnerColorTwoTimes &&
-    randomColor === winnerColor &&
-    winnerColors.length !== 2
-  ) {
+  if (!isWinnerColorTwoTimes && randomColor === winnerColor) {
     winnerColors.push(winnerColor);
 
     return winnerColor;
