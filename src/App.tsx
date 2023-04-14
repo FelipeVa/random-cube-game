@@ -14,7 +14,7 @@ import { GameInformation } from '@/components/GameInformation';
 import { StartGame } from '@/components/StartGame';
 
 function App() {
-  const [gameSize, setGameSize] = useState(7);
+  const [gameSize, setGameSize] = useState(5);
   const [started, setStarted] = useState(false);
   const [winnerColor, setWinnerColor] = useState<string | null>(null);
   const [gameCell, setGameCell] = useState(
