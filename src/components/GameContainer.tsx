@@ -7,7 +7,7 @@ type GameContainerProps = PropsWithChildren<{
 
 const GameContainer: FC<GameContainerProps> = ({ size, children }) => {
   return (
-    <div className={cn(`relative max-w-lg grid grid-cols-${size} gap-2`)}>
+    <div className={cn(`relative grid grid-cols-${size} gap-2`)}>
       {children}
     </div>
   );

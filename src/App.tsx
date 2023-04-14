@@ -14,21 +14,29 @@ import { GameInformation } from '@/components/GameInformation';
 import { StartGame } from '@/components/StartGame';
 
 function App() {
+  const [gameSize, setGameSize] = useState(7);
   const [started, setStarted] = useState(false);
   const [winnerColor, setWinnerColor] = useState<string | null>(null);
-  const [gameCell, setGameCell] = useState(generateArrayOfSizeBySize(5, '0'));
+  const [gameCell, setGameCell] = useState(
+    generateArrayOfSizeBySize(gameSize, '0')
+  );
   const [centerX, centerY] = getIndexOfMiddleOfArrayOrArray(gameCell);
   const [win, setWin] = useState(false);
   const [lives, setLives] = useState(3);
   const [points, setPoints] = useState(0);
   const [gameTimeout, setGameGameTimeout] = useState(3000);
+  const interval = useRef<null | NodeJS.Timer>(null);
+  const [generableColorLimit, setGenerableColorLimit] = useState(3);
   const flattenGameCell = gameCell.flatMap((group) => group.flat());
   const canWin =
     flattenGameCell.filter((cell) => cell === winnerColor).length === 2;
-  const interval = useRef<null | NodeJS.Timer>(null);
 
-  const generateCellColors = (winnerColor: string) => {
-    let colorBag: string[] = [];
+  const generateCellColors = (
+    availableColors: string[],
+    numberOfColors: number,
+    winnerColor: string
+  ) => {
+    const colorBag: string[] = [];
 
     const coloredCells = gameCell.map((groupCell, indexGroup) =>
       groupCell.map((cell, indexCell) => {
@@ -37,7 +45,12 @@ function App() {
         }
 
         if (centerX === indexGroup || centerY === indexCell) {
-          const randomColor = generateRandomColorForCell(colorBag, winnerColor);
+          const randomColor = generateRandomColorForCell(
+            availableColors,
+            colorBag,
+            winnerColor,
+            numberOfColors
+          );
 
           if (randomColor) {
             colorBag.push(randomColor);
@@ -60,23 +73,48 @@ function App() {
           onLose();
         }
 
-        onGenerate();
+        onGenerate(generableColorLimit);
       }, gameTimeout);
     }
 
     return () =>
       interval.current ? clearInterval(interval.current) : undefined;
-  }, [started, lives, gameTimeout, canWin, win]);
+  }, [started, lives, gameTimeout, canWin, win, generableColorLimit]);
 
-  const onGenerate = () => {
-    const _winnerColor = colors[random(0, 11)];
+  useEffect(() => {
+    function handleKeyPress(event: KeyboardEvent) {
+      if (event.code === 'Space') {
+        if (started && lives === 0) {
+          onRestart();
+          return;
+        }
+
+        if (started) {
+          onPick();
+          return;
+        }
+
+        onStart();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [started, lives, gameTimeout, canWin, win, generableColorLimit]);
+
+  const onGenerate = (numberOfColors: number) => {
+    const colorsBag = colors.slice(0, numberOfColors);
+    const randomWinnerColor = colorsBag[random(0, numberOfColors)];
 
     if (win) {
       setWin(false);
     }
 
-    setWinnerColor(_winnerColor);
-    generateCellColors(_winnerColor);
+    setWinnerColor(randomWinnerColor);
+    generateCellColors(colorsBag, numberOfColors, randomWinnerColor);
   };
 
   const onWin = () => {
@@ -84,22 +122,27 @@ function App() {
     setPoints((points) => points + 1);
 
     if (gameTimeout !== 1000) {
-      setGameGameTimeout((timeout) => timeout - 500);
+      setGameGameTimeout((timeout) => timeout - 200);
     }
+
+    if (gameTimeout === 1000) {
+      setGameGameTimeout((timeout) => timeout - 150);
+    }
+
+    if (generableColorLimit <= gameCell.length + 3) {
+      setGenerableColorLimit(generableColorLimit + 1);
+    }
+
+    onGenerate(generableColorLimit + 1);
   };
 
   const onLose = () => {
-    setGameGameTimeout((timeout) => timeout + 500);
-    setLives((lifes) => lifes - 1);
+    onGenerate(generableColorLimit);
+    setGameGameTimeout((timeout) => timeout + 250);
+    setLives((lives) => lives - 1);
   };
 
   const onPick = () => {
-    onGenerate();
-
-    if (interval.current) {
-      clearInterval(interval.current);
-    }
-
     if (!canWin) {
       return onLose();
     }
@@ -111,7 +154,9 @@ function App() {
     setGameGameTimeout(3000);
     setLives(3);
     setPoints(0);
-    onGenerate();
+    setGenerableColorLimit(3);
+    onGenerate(3);
+    setGameCell(generateArrayOfSizeBySize(gameSize, '0'));
   };
 
   const onStart = () => {
